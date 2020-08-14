@@ -1,0 +1,25 @@
+.btn {
+  border: 0;
+  background-color: #ee6f4c;
+  display: inline-block;
+  align-self: center;
+  padding: 0.5rem 3rem;
+  color: white;
+  border-radius: 2rem;
+  font-family: 'Lemonada', cursive;
+  cursor: pointer;
+  text-transform: uppercase;
+  &:focus {
+    outline: none;
+  }
+  &-secondary {
+    background-color: white;
+    color: rgba(black, 0.8);
+    box-shadow: 2px 4px 6px 1px rgba(0, 0, 0, 0.48);
+  }
+
+  &.link {
+    text-decoration: none;
+    font-size: 1.4rem;
+  }
+}
