@@ -108,7 +108,7 @@ function Chat({ history, currentUser, isLogedIn }) {
     const chat = chats.find((chat) =>
       usersInChat.every((user) => chat.users.includes(user))
     );
-    console.log(chat);
+    // console.log(chat);
 
     selectChat(chats.indexOf(chat));
   };
@@ -147,9 +147,9 @@ function Chat({ history, currentUser, isLogedIn }) {
               Sign Out
             </button>
           </div>
-          <div>
+          <div className="new-chat">
             <button
-              className="btn"
+              className="btn new-chat-btn"
               style={{
                 width: '100%',
                 margin: '0.5rem 0',

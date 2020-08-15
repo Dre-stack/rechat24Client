@@ -4,6 +4,10 @@ import firebase from '../../services/firebase';
 function NewChatForm(props) {
   const [search, setSearch] = useState('');
   const [user, setUser] = useState();
+  const [userNotFoundError, setUserNotFoundError] = useState({
+    status: false,
+    message: '',
+  });
   // console.log(user);
 
   const searchUsers = () => {
@@ -13,9 +17,24 @@ function NewChatForm(props) {
       .where('username', '==', search)
       .get()
       .then((querySnapShot) => {
-        querySnapShot.forEach((doc) => {
-          setUser(doc.data());
-        });
+        if (querySnapShot.docs.length > 0) {
+          querySnapShot.forEach((doc) => {
+            const user = doc.data();
+            if (user.username !== props.currentUser.username) {
+              setUser(user);
+            } else {
+              setUserNotFoundError({
+                status: true,
+                message: 'You cannot search for yourself',
+              });
+            }
+          });
+        } else {
+          setUserNotFoundError({
+            status: true,
+            message: 'No user with that username, Please try again',
+          });
+        }
       })
       .catch(function (err) {
         console.log(err);
@@ -79,6 +98,9 @@ function NewChatForm(props) {
         <button onClick={searchUsers}>
           <i className="fas fa-search"></i>
         </button>
+      </div>
+      <div style={{ padding: '2rem' }}>
+        {userNotFoundError.status && userNotFoundError.message}
       </div>
       <React.Fragment>{renderUsers()}</React.Fragment>
     </div>

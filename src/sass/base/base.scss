@@ -1,3 +1,5 @@
+@import '../abstracts/mixins.scss';
+
 *,
 *::before,
 *::after {
@@ -8,6 +10,9 @@
 
 html {
   font-size: 62.5%;
+  @include respond(tab-port) {
+    font-size: 50%;
+  }
 }
 
 body {
