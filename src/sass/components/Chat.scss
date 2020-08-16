@@ -1,247 +1,177 @@
 @import '../abstracts/mixins.scss';
 
 .chat {
-  background-color: rgba($body-color, 0.4);
+  background-color: #302f2f;
   height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
   width: 100vw;
   overflow: hidden;
-  &-top {
-    height: 6rem;
-    border-bottom: 1px solid $border-color;
-    text-align: center;
-    h1 {
-      font-weight: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  &-wrapper {
+    height: 90%;
+    width: 60%;
+    background-color: rgba($body-color, 1);
+    position: relative;
+
+    .sign-out {
+      position: absolute;
+      bottom: 1rem;
+      left: 1rem;
     }
-  }
-  &-bottom {
-    display: flex;
-    height: calc(100% - 6rem);
-    .chat-left {
-      width: 30%;
-      // background-color: #fff;
+
+    @include respond(phone) {
+      width: 100%;
       height: 100%;
-      overflow-y: auto;
-      border-right: 1px solid $border-color;
+      background-color: rgba($body-color, 1);
+    }
 
-      .user-card {
-        padding: 0 1rem;
-        background-color: #eeeaea;
-        border-radius: 2rem;
-        height: 5rem;
-        display: flex;
-        font-size: 1rem;
-        align-items: center;
-        justify-content: space-between;
-
-        @include respond(tab-port) {
-          flex-direction: column;
-          height: auto;
-          padding: 1rem;
+    .chat-top {
+      // position: fixed;
+      // width: 100%;
+      height: 12%;
+      border-bottom: 1px solid $border-color;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      h1 {
+        font-weight: 100;
+        @include respond(phone) {
+          font-size: 2rem;
         }
-        a img {
-          height: 4rem;
-          border-radius: 50%;
-        }
-        button {
-          font-size: 0.8rem;
+      }
+      .new-chat-btn {
+        @include respond(phone) {
+          font-size: 1.2rem;
           padding: 0.5rem 1rem;
         }
       }
-      .new-chat {
-        .new-chat-btn {
-          @include respond(tab-port) {
-            font-size: 8px;
-          }
-        }
-      }
-      .chat-search {
-        background-color: white;
-        border-radius: 2rem;
-        height: 4rem;
-        width: 100%;
-        justify-content: space-between;
+      .user-summary {
+        height: 100%;
         display: flex;
-        padding: 1rem;
-        input {
-          width: 80%;
-          border: none;
-          font-size: 1.6rem;
-          &::placeholder {
-            font-family: 'Lemonada', cursive;
-            font-size: 1.2rem;
-            @include respond(tab-port) {
-              font-size: 6.5px;
-            }
-          }
-          &:focus {
-            outline: none;
-          }
-        }
-        button {
-          cursor: pointer;
-          background: transparent;
-          outline: none;
-          border: none;
-          font-size: 1.6rem;
-        }
-      }
-      .chart-card {
-        height: 5rem;
-        display: flex;
-        font-size: 1rem;
         align-items: center;
-        background-color: #eeeaea;
-        cursor: pointer;
-        padding: 0 1rem;
-        margin: 1rem 0;
-        @include respond(tab-port) {
+        @include respond(phone) {
           flex-direction: column;
-          height: auto;
-          font-size: 8px;
-          padding: 1rem;
-        }
-        &:hover {
-          background-color: rgba(#eeeaea, 0.7);
-        }
-        &.selected {
-          background-color: #fff;
-        }
-
-        .image {
-          width: 20%;
-          @include respond(tab-port) {
-            width: 100%;
-            text-align: center;
-          }
-          img {
-            height: 4rem;
-            border-radius: 50%;
-            margin-right: 2rem;
-            @include respond(tab-port) {
-              margin-right: 0;
-            }
-          }
-        }
-        .details {
-          text-align: center;
+          justify-content: center;
           line-height: 2rem;
-          @include respond(tab-port) {
-            line-height: 1.4;
+        }
+        a img {
+          width: 2.5rem;
+          border-radius: 50%;
+          margin-right: 1rem;
+        }
+        .username {
+          font-size: 1rem;
+        }
+        .sign-out {
+          font-weight: 100;
+          font-size: 1rem;
+          cursor: pointer;
+          @include respond(phone) {
+            color: $action-color;
           }
-          .username {
-            font-size: 1.6rem;
-          }
-          .last-message {
-            font-weight: 100;
+          &:hover {
+            color: $action-color;
           }
         }
       }
     }
-    .chat-right {
-      height: 100%;
-      width: 70%;
 
-      // MESSAGE BOARD
-
-      .message-board {
-        height: 100%;
+    .chat-content {
+      width: 100%;
+      height: 88%;
+      overflow-y: auto;
+      .chat-list {
         width: 100%;
-        background: url('../../img/chatBG2.jpeg');
-        background-size: contain;
-        // filter: blur(1rem);
-        overflow-y: auto;
-        position: relative;
-        padding-bottom: 8rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-items: center;
 
-        .messages {
-          font-size: 1rem;
-          width: 100%;
+        .chat-search {
+          background-color: white;
+          border-radius: 2rem;
+          height: 4rem;
+          width: 70%;
+          justify-content: space-between;
           display: flex;
-          flex-direction: column;
-          padding: 1rem 2rem 0 2rem;
-          @include respond(tab-port) {
-            padding: 1rem;
+          padding: 1rem;
+          margin-top: 1rem;
+          input {
+            width: 80%;
+            border: none;
+            font-size: 16px;
+            &::placeholder {
+              font-family: 'Lemonada', cursive;
+              font-size: 1.2rem;
+              // @include respond(tab-port) {
+              //   font-size: 6.5px;
+              // }
+            }
+            &:focus {
+              outline: none;
+            }
           }
-
-          .message {
-            width: 60%;
-            border-radius: 2rem;
-            margin: 1.5rem 0;
-            padding: 1rem 1rem;
-            @include respond(tab-port) {
-              margin: 1rem 0;
-              width: 70%;
-            }
-            @include respond(phone) {
-              margin: 0.5rem 0;
-              width: 80%;
-            }
-            &.me {
-              align-self: flex-end;
-              background-color: $action-color;
-              color: #fff;
-            }
-            &.you {
-              align-self: flex-start;
-              background-color: rgba($body-color, 0.5);
-            }
+          button {
+            cursor: pointer;
+            background: transparent;
+            outline: none;
+            border: none;
+            font-size: 1.6rem;
           }
         }
-        .message-input {
-          position: fixed;
-          bottom: 0;
-          width: 100%;
-          height: 8rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background-color: $body-color;
-          .input-container {
+        .chat-user-list {
+          width: 70%;
+          margin-top: 1rem;
+          @include respond(phone) {
+            width: 90%;
+          }
+
+          .chat-card {
+            width: 100%;
             display: flex;
-            height: 60%;
-            width: 70%;
-            position: relative;
-            @include respond(tab-port) {
-              width: 90%;
+            height: 6rem;
+            background-color: #fff;
+            margin: 1rem 0;
+            cursor: pointer;
+            padding: 1rem 2rem;
+            border-radius: 3rem;
+            box-shadow: -4px 2px 5px 0px rgba(0, 0, 0, 0.4);
+            transition: all 0.2s;
+            &.unread {
+              background-color: #f0e0e0;
             }
-            @include respond(phone) {
-              width: 100%;
-            }
-            textarea {
-              width: 65%;
-              font-family: 'Lemonada', cursive;
-              border: none;
-              border-radius: 2rem;
-              padding: 1rem 2rem;
-              @include respond(tab-port) {
-                width: 70%;
-              }
-              &::placeholder {
-                @include respond(tab-port) {
-                  font-size: 1.4rem;
-                }
-              }
-              &:focus {
-                outline: none;
-              }
-            }
-            button {
-              position: absolute;
-              left: 60%;
-              background: transparent;
-              border: 0;
-              height: 100%;
-              cursor: pointer;
-              font-size: 2rem;
+            .unread-icon {
               color: $action-color;
-              @include respond(tab-port) {
-                left: 65%;
+            }
+
+            &:hover {
+              transform: translateY(-0.3rem);
+            }
+
+            .image {
+              width: 20%;
+              img {
+                height: 4rem;
+                border-radius: 50%;
               }
-              @include respond(phone) {
-                left: 60%;
+            }
+            .details {
+              width: 80%;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+
+              .username {
+                font-size: 1.6rem;
               }
-              &:focus {
-                outline: none;
+              .last-message {
+                font-weight: 100;
+                font-size: 1.2rem;
+                color: #858282;
               }
             }
           }
@@ -250,6 +180,177 @@
     }
   }
 }
+///////////////////////////////////////////////
+/*
+/* MESSAGE BOARD
+*/
+///////////////////////////////////////////////
+
+.message-board {
+  background-color: #302f2f;
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+  width: 100vw;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  .message-board-wrapper {
+    height: 90%;
+    width: 60%;
+    background-color: rgba($body-color, 1);
+    position: relative;
+
+    @include respond(phone) {
+      width: 100%;
+      height: 100%;
+      background-color: rgba($body-color, 1);
+    }
+
+    .message-top {
+      width: 100%;
+      height: 12%;
+      border-bottom: 1px solid $border-color;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      @include respond(phone) {
+        height: 10%;
+      }
+      button {
+        font-size: 1.2rem;
+        padding: 0.3rem 1.5rem;
+      }
+
+      .user-summary {
+        display: flex;
+        margin-left: 20%;
+        cursor: pointer;
+        img {
+          height: 4rem;
+          border-radius: 50%;
+          margin-right: 1rem;
+        }
+      }
+    }
+    .messages {
+      font-size: 1.2rem;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 88%;
+      overflow-y: auto;
+      background: url('../../img/chatBG2.jpeg');
+      background-size: contain;
+      padding: 1rem 2rem 8rem 2rem;
+      @include respond(tab-port) {
+        padding: 1rem 1rem 8rem 1rem;
+      }
+
+      .message {
+        border-radius: 2rem;
+        margin: 1.5rem 0;
+        padding: 1rem 1rem;
+        width: 60%;
+        @include respond(tab-port) {
+          width: 70%;
+          margin: 1rem 0;
+        }
+        @include respond(phone) {
+          margin: 0.5rem 0;
+          width: 80%;
+          font-size: 1.3rem;
+        }
+        &.me {
+          align-self: flex-end;
+          background-color: $action-color;
+          color: #fff;
+        }
+        &.you {
+          align-self: flex-start;
+          background-color: rgba($body-color, 0.5);
+        }
+      }
+    }
+    .message-input {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: $body-color;
+      .input-container {
+        display: flex;
+        height: 60%;
+        width: 100%;
+        position: relative;
+        justify-content: center;
+        @include respond(tab-port) {
+          width: 90%;
+        }
+        @include respond(phone) {
+          width: 100%;
+        }
+        textarea {
+          width: 80%;
+          font-family: 'Lemonada', cursive;
+          border: none;
+          border-radius: 2rem;
+          padding: 1rem 2rem;
+          font-size: 1.6rem;
+          @include respond(tab-port) {
+            width: 85%;
+            font-size: 16px;
+          }
+          @include respond(phone) {
+            width: 90%;
+            font-size: 16px;
+          }
+          &::placeholder {
+            font-size: 1.4rem;
+            @include respond(tab-port) {
+              font-size: 1.4rem;
+            }
+          }
+          &:focus {
+            outline: none;
+          }
+        }
+        button {
+          position: absolute;
+          right: 12%;
+          background: transparent;
+          border: 0;
+          height: 100%;
+          cursor: pointer;
+          font-size: 2rem;
+          color: $action-color;
+          @include respond(tab-port) {
+            left: 85%;
+          }
+          @include respond(phone) {
+            left: 85%;
+          }
+          &:focus {
+            outline: none;
+          }
+        }
+      }
+    }
+  }
+}
+
+///////////////////////////////////////////////
+/*
+/* NEW CHAT
+*/
+///////////////////////////////////////////////
 
 .new-chart {
   width: 100%;
@@ -296,6 +397,7 @@
     display: flex;
     padding: 1rem;
     margin-bottom: 3rem;
+    margin-top: 2rem;
 
     @include respond(tab-port) {
       width: 80%;
@@ -303,7 +405,7 @@
     input {
       width: 80%;
       border: none;
-      font-size: 1.6rem;
+      font-size: 16px;
       &::placeholder {
         font-family: 'Lemonada', cursive;
         font-size: 1.2rem;

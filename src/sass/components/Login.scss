@@ -3,6 +3,7 @@
 .login {
   background-color: $body-color;
   height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
   width: 100vw;
   display: flex;
   align-items: center;
@@ -11,13 +12,18 @@
   &-wrapper {
     display: flex;
     width: 90%;
+    height: 100%;
+    align-items: center;
+
     @include respond(tab-port) {
       flex-direction: column;
+      justify-content: center;
     }
   }
   &-left {
     width: 50%;
     height: 80vh;
+    height: calc(var(--vh, 1vh) * 80);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -40,14 +46,17 @@
     width: 50%;
     background-color: #fff9f9;
     height: 80vh;
+    height: calc(var(--vh, 1vh) * 80);
     width: 40;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     border-radius: 2rem;
+
     @include respond(tab-port) {
       width: 70%;
+      min-height: 40rem;
       align-self: center;
       justify-content: flex-start;
       padding-top: 6rem;
@@ -73,9 +82,42 @@
       }
 
       & > * {
-        margin: 1rem 0;
+        margin: 0.5rem 0;
         &:last-child {
-          margin-top: 3rem;
+          margin-top: 1rem;
+        }
+      }
+      .input-wrapper {
+        display: flex;
+        flex-direction: column-reverse;
+
+        // align-items: flex-start;
+        .login-form-input {
+          border: none;
+          padding: 1rem 0.5rem;
+          font-size: 16px;
+          border-bottom: 1px solid $border-color;
+
+          &:focus {
+            outline: none;
+            border-bottom: 2px solid #2a3cdb;
+          }
+          &::placeholder {
+            font-size: 1.4rem;
+          }
+        }
+        .login-form-label {
+          font-weight: 100;
+          font-family: Arial, Helvetica, sans-serif;
+          transition: all 0.2s;
+          margin-left: 0.4rem;
+          color: $border-color;
+          font-size: 1.4rem;
+        }
+        .login-form-input:placeholder-shown + .login-form-label {
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(3rem);
         }
       }
     }

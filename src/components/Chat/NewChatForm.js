@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import firebase from '../../services/firebase';
+import { connect } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 
 function NewChatForm(props) {
   const [search, setSearch] = useState('');
@@ -8,9 +10,11 @@ function NewChatForm(props) {
     status: false,
     message: '',
   });
+  const history = useHistory();
   // console.log(user);
 
-  const searchUsers = () => {
+  const searchUsers = (e) => {
+    e.preventDefault();
     firebase
       .firestore()
       .collection('users')
@@ -21,6 +25,7 @@ function NewChatForm(props) {
           querySnapShot.forEach((doc) => {
             const user = doc.data();
             if (user.username !== props.currentUser.username) {
+              setUserNotFoundError({ status: false, message: '' });
               setUser(user);
             } else {
               setUserNotFoundError({
@@ -65,9 +70,27 @@ function NewChatForm(props) {
     // console.log(existingChat);
 
     if (existingChat) {
-      props.goToChat(dockey);
+      //if there is an existing chat, navigate user to the chat
+      const usersInChat = dockey.split(':');
+      const chat = props.chats.find((chat) =>
+        usersInChat.every((user) => chat.users.includes(user))
+      );
+      const chatIndex = props.chats.indexOf(chat);
+      history.push(`/chats/${chatIndex}`);
     } else {
-      props.createNewChat(dockey);
+      //if no existing chat , create new chat and navigate user to the newchat
+      firebase
+        .firestore()
+        .collection('chats')
+        .doc(dockey)
+        .set({
+          receiverHasRead: false,
+          users: dockey.split(':'),
+          messages: [],
+        })
+        .then(async () => {
+          props.setNewChat(dockey);
+        });
     }
   };
 
@@ -87,7 +110,13 @@ function NewChatForm(props) {
 
   return (
     <div className="new-chart">
-      <div className="user-search">
+      <button
+        className="btn btn-secondary"
+        onClick={() => props.goBack(false)}
+      >
+        Go Back
+      </button>
+      <form className="user-search">
         <input
           name="search"
           placeholder="Search Users"
@@ -95,10 +124,10 @@ function NewChatForm(props) {
           onChange={(e) => setSearch(e.target.value)}
           type="text"
         />
-        <button onClick={searchUsers}>
+        <button type="submit" onClick={searchUsers}>
           <i className="fas fa-search"></i>
         </button>
-      </div>
+      </form>
       <div style={{ padding: '2rem' }}>
         {userNotFoundError.status && userNotFoundError.message}
       </div>
@@ -107,4 +136,9 @@ function NewChatForm(props) {
   );
 }
 
-export default NewChatForm;
+const mapStateToProps = (state) => ({
+  chats: state.chats.chats,
+  currentUser: state.user.currentUser,
+});
+
+export default connect(mapStateToProps)(NewChatForm);

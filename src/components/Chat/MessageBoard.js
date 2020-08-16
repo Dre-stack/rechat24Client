@@ -1,9 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
-// import ScrollToBottom from 'react-scroll-to-bottom';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from 'react';
+import { connect } from 'react-redux';
 // import moment from 'moment';
+import firebase from '../../services/firebase';
+import { loadUser } from '../../actions';
 
 function MessageBoard(props) {
   const [message, setMessage] = useState('');
+  const [friendUserName, setFriendUserName] = useState('');
+  const [friendData, setFriendData] = useState();
+  const chatIndex = props.match.params.index;
 
   const messageBoardRef = useRef();
   /**
@@ -14,12 +24,48 @@ function MessageBoard(props) {
     if (container) {
       container.scrollTo(0, container.scrollHeight);
     }
-  }, [props.chat]);
+  }, [props.chats]);
+
+  const getFriendUserName = useCallback(() => {
+    const { chats, currentUser } = props;
+    if (chats && currentUser) {
+      const username = chats[chatIndex].users.filter(
+        (user) => user !== currentUser.username
+      )[0];
+
+      setFriendUserName(username);
+    }
+  }, [chatIndex, props]);
+
+  const loadUser = async (username) => {
+    firebase
+      .firestore()
+      .collection('users')
+      .where('username', '==', username)
+      .get()
+      .then((querySnapShot) => {
+        querySnapShot.forEach((doc) => {
+          const userData = doc.data();
+          setFriendData(userData);
+        });
+      });
+  };
+
+  useEffect(() => {
+    getFriendUserName();
+  }, [getFriendUserName]);
+
+  useEffect(() => {
+    if (friendUserName) {
+      loadUser(friendUserName);
+    }
+  }, [loadUser]);
 
   const renderMessages = () => {
-    const { chat, currentUser } = props;
-    if (chat && currentUser) {
-      return chat.messages.map((item, i) => (
+    const { chats, currentUser } = props;
+    if (chats && currentUser) {
+      // console.log(chats);
+      return chats[chatIndex].messages.map((item, i) => (
         <div
           key={i}
           className={
@@ -72,41 +118,86 @@ function MessageBoard(props) {
    */
 
   const handleSubmit = (e) => {
-    const { chat, currentUser } = props;
+    const { chats, currentUser } = props;
     e.preventDefault();
     if (validateMessage(message)) {
       const docKey = buildChatDocKey(
-        chat.users.filter(
+        chats[chatIndex].users.filter(
           (username) => username !== currentUser.username
         )[0]
       );
-      props.sendMessage(message, docKey);
+
+      firebase
+        .firestore()
+        .collection('chats')
+        .doc(docKey)
+        .update({
+          messages: firebase.firestore.FieldValue.arrayUnion({
+            sender: currentUser.username,
+            message,
+            timeStamp: Date.now(),
+          }),
+          receiverHasRead: false,
+        });
+
       setMessage('');
     }
   };
 
   return (
-    <div
-      className="message-board"
-      ref={messageBoardRef}
-      id="messages"
-    >
-      <div className="messages">{renderMessages()}</div>
-      <div className="message-input">
-        <form className="input-container" onSubmit={handleSubmit}>
-          <textarea
-            onKeyUp={userTyping}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type Your Message"
-          />
-          <button>
-            <i className="far fa-paper-plane"></i>
+    <div className="message-board" ref={messageBoardRef}>
+      <div className="message-board-wrapper">
+        <div className="message-top">
+          <button
+            onClick={() => props.history.push('/chat')}
+            className="btn btn-secondary"
+          >
+            Go Back
           </button>
-        </form>
+          <div
+            className="user-summary"
+            onClick={() =>
+              props.history.push(`/user/${friendUserName}`)
+            }
+          >
+            <img
+              src={
+                friendData && friendData.url
+                  ? friendData.url
+                  : require('../../img/empty.png')
+              }
+              alt="user"
+            />
+
+            <div>
+              <div className="username">{friendUserName}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="messages" id="messages">
+          {renderMessages()}
+        </div>
+        <div className="message-input">
+          <form className="input-container" onSubmit={handleSubmit}>
+            <textarea
+              onKeyUp={userTyping}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Type Your Message"
+            />
+            <button>
+              <i className="far fa-paper-plane"></i>
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
 }
+const mapStateToProps = (state) => ({
+  chats: state.chats.chats,
+  currentUser: state.user.currentUser,
+});
 
-export default MessageBoard;
+export default connect(mapStateToProps)(MessageBoard);

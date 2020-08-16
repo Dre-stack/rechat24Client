@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import firebase from '../../services/firebase';
 // import { makeStyles } from '@material-ui/core/styles';
-import TextField from '@material-ui/core/TextField';
+// import TextField from '@material-ui/core/TextField';
 import { Link } from 'react-router-dom';
 import { loadUser } from '../../actions';
 import { connect } from 'react-redux';
 
 // const useStyles = makeStyles((theme) => ({
 //   input: {
-//     background: 'white',
+//     fontSize: '16px',
 //   },
 // }));
 
@@ -17,6 +17,12 @@ function Login({ history, loadUser, isLogedIn }) {
     email: '',
     password: '',
   });
+  const [submissionError, setSubmissionError] = useState({
+    status: false,
+    message: 'Incorrect email or password, Please try again',
+  });
+
+  // const classes = useStyles();
 
   // Check if User is Logged in
 
@@ -59,7 +65,9 @@ function Login({ history, loadUser, isLogedIn }) {
         }
         history.push('/chat');
       })
-      .catch((err) => console.log('login error', err));
+      .catch((err) =>
+        setSubmissionError({ ...submissionError, status: true })
+      );
   };
 
   return (
@@ -75,23 +83,32 @@ function Login({ history, loadUser, isLogedIn }) {
         </div>
         <div className="login-right">
           <div className="login-title">Log In</div>
+          <div className="error">
+            {submissionError.status && submissionError.message}
+          </div>
           <form className="login-form">
-            <TextField
-              label="Enter Email"
-              variant="filled"
-              value={loginData.email}
-              name="email"
-              type="text"
-              onChange={handleChange}
-            />
-            <TextField
-              label="Enter Password"
-              variant="filled"
-              value={loginData.password}
-              name="password"
-              type="password"
-              onChange={handleChange}
-            />
+            <div className="input-wrapper">
+              <input
+                placeholder="Email"
+                value={loginData.email}
+                name="email"
+                type="email"
+                className="login-form-input"
+                onChange={handleChange}
+              />
+              <label className="login-form-label">Email</label>
+            </div>
+            <div className="input-wrapper">
+              <input
+                placeholder="Enter Password"
+                value={loginData.password}
+                name="password"
+                type="password"
+                onChange={handleChange}
+                className="login-form-input"
+              />
+              <label className="login-form-label">Password</label>
+            </div>
             <button
               className="btn"
               onClick={handleSubmit}

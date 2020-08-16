@@ -3,13 +3,18 @@ import firebase from '../../services/firebase';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import CurrentChats from './ChatList';
-import MessageBoard from './MessageBoard';
+// import MessageBoard from './MessageBoard';
 import NewChatForm from './NewChatForm';
+import { getUserChatToState } from '../../actions';
 
-function Chat({ history, currentUser, isLogedIn }) {
-  const [selectedChat, setSelectedChat] = useState(null);
-  const [newChatFormVisible, setNewChatFormVisible] = useState(true);
+function Chat({
+  history,
+  currentUser,
+  isLogedIn,
+  getUserChatToState,
+}) {
   const [chats, setChats] = useState();
+  const [showNewChatForm, setShowNewChatForm] = useState(false);
 
   /**
    * Check if user is logged in, if not redirect to login
@@ -33,8 +38,9 @@ function Chat({ history, currentUser, isLogedIn }) {
       .onSnapshot(async (res) => {
         const chatList = await res.docs.map((doc) => doc.data());
         setChats(chatList);
+        getUserChatToState(chatList);
       });
-  }, [currentUser]);
+  }, [currentUser, getUserChatToState]);
 
   useEffect(() => {
     if (currentUser) {
@@ -51,12 +57,12 @@ function Chat({ history, currentUser, isLogedIn }) {
   };
 
   /**
-   * render new chat form to create a new chat
+   * load chats after adding new chat
    */
 
-  const renderNewChatForm = () => {
-    setNewChatFormVisible(true);
-    setSelectedChat(null);
+  const setNewChat = async (dockey) => {
+    await loadChats();
+    setShowNewChatForm(false);
   };
 
   /**
@@ -64,11 +70,6 @@ function Chat({ history, currentUser, isLogedIn }) {
    * @param {number} index from the currentchats component
    * @return {number}
    */
-
-  const selectChat = (chatIndex) => {
-    setSelectedChat(chatIndex);
-    setNewChatFormVisible(false);
-  };
 
   /**
    * set the index of the selected chat
@@ -81,107 +82,61 @@ function Chat({ history, currentUser, isLogedIn }) {
   //     messages[messages.length - 1].sender !== currentUser.username
   //   );
   // };
-  /**
-   * set the index of the selected chat
-   * @param {string} message from the message board component
-   *
-   */
-
-  const sendMessage = (message, dockey) => {
-    // console.log(message, dockey);
-    firebase
-      .firestore()
-      .collection('chats')
-      .doc(dockey)
-      .update({
-        messages: firebase.firestore.FieldValue.arrayUnion({
-          sender: currentUser.username,
-          message,
-          timeStamp: Date.now(),
-        }),
-        receiverHasRead: false,
-      });
-  };
-
-  const goToChat = (dockey) => {
-    const usersInChat = dockey.split(':');
-    const chat = chats.find((chat) =>
-      usersInChat.every((user) => chat.users.includes(user))
-    );
-    // console.log(chat);
-
-    selectChat(chats.indexOf(chat));
-  };
-
-  const createNewChat = async (dockey) => {
-    await firebase
-      .firestore()
-      .collection('chats')
-      .doc(dockey)
-      .set({
-        receiverHasRead: false,
-        users: dockey.split(':'),
-        messages: [],
-      });
-    // await loadChats();
-    // selectChat(chats.length - 1);
-  };
 
   ///////////////////////
   //// *****RENDER********///////////
   //////////////////////
   return (
     <div className="chat">
-      <div className="chat-top">
-        <h1>CHATS</h1>
-      </div>
-      <div className="chat-bottom">
-        <div className="chat-left">
-          <div className="user-summary user-card">
-            <Link to="/user/profile">
-              {' '}
-              <img src={require('../../img/empty.png')} alt="user" />
-            </Link>
-            <div>{currentUser && currentUser.username}</div>
-            <button onClick={signOut} className="btn btn-secondary">
-              Sign Out
-            </button>
-          </div>
-          <div className="new-chat">
-            <button
-              className="btn new-chat-btn"
-              style={{
-                width: '100%',
-                margin: '0.5rem 0',
-              }}
-              onClick={renderNewChatForm}
+      <div className="chat-wrapper">
+        <div className="chat-top">
+          <div className="user-summary ">
+            <Link
+              to={
+                currentUser ? `/user/${currentUser.username}` : '##'
+              }
             >
-              Start A New Chat
-            </button>
+              {' '}
+              <img
+                src={
+                  currentUser && currentUser.url
+                    ? currentUser.url
+                    : require('../../img/empty.png')
+                }
+                alt="user"
+              />
+            </Link>
+            <div>
+              <div className="username">
+                {currentUser && currentUser.username}
+              </div>
+            </div>
           </div>
-          <CurrentChats
-            selectChat={selectChat}
-            chats={chats}
-            currentUser={currentUser}
-            selectedChatIndex={selectedChat}
-          />
+          <h1>CHATS</h1>
+          <button
+            className="btn new-chat-btn"
+            onClick={() => setShowNewChatForm(true)}
+          >
+            New Chat
+          </button>
         </div>
-        <div className="chat-right">
-          {!newChatFormVisible && chats && (
-            <MessageBoard
-              currentUser={currentUser}
-              chat={chats[selectedChat]}
-              sendMessage={sendMessage}
-            />
+        <div className="chat-content">
+          {!showNewChatForm && (
+            <CurrentChats chats={chats} currentUser={currentUser} />
           )}
-          {newChatFormVisible && (
+          {showNewChatForm && (
             <NewChatForm
-              currentUser={currentUser}
-              goToChat={goToChat}
-              createNewChat={createNewChat}
+              setNewChat={setNewChat}
+              goBack={setShowNewChatForm}
             />
           )}
         </div>
+        <button
+          className="btn btn-secondary sign-out"
+          onClick={signOut}
+        >
+          Sign Out
+        </button>
       </div>
     </div>
   );
@@ -192,4 +147,4 @@ const mapStateToProps = (state) => ({
   isLogedIn: state.auth.isLogedIn,
 });
 
-export default connect(mapStateToProps)(Chat);
+export default connect(mapStateToProps, { getUserChatToState })(Chat);
