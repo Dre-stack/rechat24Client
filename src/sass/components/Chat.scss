@@ -278,6 +278,10 @@
         height: 25rem;
         margin: 2rem 0;
         background-color: #858282;
+        @include respond(phone) {
+          max-height: 20rem;
+        }
+
         &.me {
           align-self: flex-end;
           border: 3px solid $action-color;
