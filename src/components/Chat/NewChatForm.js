@@ -87,6 +87,9 @@ function NewChatForm(props) {
           receiverHasRead: false,
           users: dockey.split(':'),
           messages: [],
+          dockey: dockey,
+          lastMessage: '',
+          lastMessageSender: '',
         })
         .then(async () => {
           props.setNewChat(dockey);

@@ -5,17 +5,18 @@ import React, {
   useCallback,
 } from 'react';
 import { connect } from 'react-redux';
-// import moment from 'moment';
+import moment from 'moment';
 import firebase from '../../services/firebase';
-import { loadUser } from '../../actions';
 
 function MessageBoard(props) {
   const [message, setMessage] = useState('');
+  const [chatMessages, setChatMessages] = useState();
   const [friendUserName, setFriendUserName] = useState('');
   const [friendData, setFriendData] = useState();
   const chatIndex = props.match.params.index;
 
   const messageBoardRef = useRef();
+  const photoInputRef = useRef();
   /**
    * Load user current chats into state
    */
@@ -24,7 +25,7 @@ function MessageBoard(props) {
     if (container) {
       container.scrollTo(0, container.scrollHeight);
     }
-  }, [props.chats]);
+  }, [chatMessages]);
 
   const getFriendUserName = useCallback(() => {
     const { chats, currentUser } = props;
@@ -38,7 +39,7 @@ function MessageBoard(props) {
   }, [chatIndex, props]);
 
   const loadUser = async (username) => {
-    firebase
+    await firebase
       .firestore()
       .collection('users')
       .where('username', '==', username)
@@ -51,33 +52,74 @@ function MessageBoard(props) {
       });
   };
 
-  useEffect(() => {
-    getFriendUserName();
-  }, [getFriendUserName]);
+  /**
+   * Load chat messages form store
+   */
+
+  const getChatMessages = useCallback(async () => {
+    const { chats } = props;
+    if (chats) {
+      const chatkey = chats[chatIndex].dockey;
+      await firebase
+        .firestore()
+        .collection('messages')
+        .where('chatkey', '==', chatkey)
+        .orderBy('timeStamp', 'asc')
+        .onSnapshot(async (snapShot) => {
+          let messages = [];
+          await snapShot.docs.forEach((doc) =>
+            messages.push(doc.data())
+          );
+          setChatMessages(messages);
+          // console.log(messages);
+        });
+    }
+  }, [props, chatIndex]);
 
   useEffect(() => {
+    getFriendUserName();
+    getChatMessages();
     if (friendUserName) {
       loadUser(friendUserName);
     }
-  }, [loadUser]);
+  }, [getFriendUserName, friendUserName, getChatMessages]);
 
   const renderMessages = () => {
-    const { chats, currentUser } = props;
-    if (chats && currentUser) {
+    const { currentUser } = props;
+    if (chatMessages && currentUser) {
       // console.log(chats);
-      return chats[chatIndex].messages.map((item, i) => (
-        <div
-          key={i}
-          className={
-            item.sender === currentUser.username
-              ? 'message me'
-              : 'message you'
-          }
-        >
-          {item.message}
-          {/* <h3>{item.timeStamp.seconds}</h3> */}
-        </div>
-      ));
+      return chatMessages.map((item, i) => {
+        // {item.type === 0 ? }
+        if (!item.type || item.type === 0) {
+          return (
+            <div
+              key={i}
+              className={
+                item.sender === currentUser.username
+                  ? 'message me'
+                  : 'message you'
+              }
+            >
+              {item.message}
+              <h6>{moment(Number(item.timeStamp)).fromNow()}</h6>
+            </div>
+          );
+        } else if (item.type === 1) {
+          return (
+            <div
+              key={i}
+              className={
+                item.sender === currentUser.username
+                  ? 'image me'
+                  : 'image you'
+              }
+            >
+              <img src={item.message} alt={`from ${item.sender}`} />
+              <h6>{moment(Number(item.timeStamp)).fromNow()}</h6>
+            </div>
+          );
+        }
+      });
     }
   };
 
@@ -92,18 +134,6 @@ function MessageBoard(props) {
   };
 
   /**
-   * check if the message is valid before sending
-   * @param {string} username from the current chat partner
-   * @returns {string} chat document key for firebase
-   */
-
-  const buildChatDocKey = (friendUserName) => {
-    return [props.currentUser.username, friendUserName]
-      .sort()
-      .join(':');
-  };
-
-  /**
    * pressing enter Key to send
    */
 
@@ -112,35 +142,67 @@ function MessageBoard(props) {
       handleSubmit(e);
     }
   };
+  /**
+   * Send Photo
+   */
+
+  const sendPhoto = async (e) => {
+    const file = e.target.files[0];
+    const uploadTask = firebase
+      .storage()
+      .ref()
+      .child(props.currentUser.username + `message ${Date.now()}`)
+      .put(file);
+
+    uploadTask.on(
+      'state_changed',
+      null,
+      (err) => {},
+      () => {
+        uploadTask.snapshot.ref.getDownloadURL().then((url) => {
+          // setPhotoUrl(url);
+          sendMessage(url, 1);
+        });
+      }
+    );
+  };
 
   /**
    * Send Message
    */
-
-  const handleSubmit = (e) => {
+  const sendMessage = async (messageBody, type) => {
     const { chats, currentUser } = props;
+    const chatkey = chats[chatIndex].dockey;
+
+    await firebase.firestore().collection('messages').doc().set({
+      sender: currentUser.username,
+      message: messageBody,
+      type,
+      timeStamp: Date.now(),
+      chatkey: chatkey,
+      receiverHasRead: false,
+    });
+
+    //update the last message and sender field in the chat document
+
+    await firebase
+      .firestore()
+      .collection('chats')
+      .doc(chatkey)
+      .update({
+        lastMessage: message,
+        lastMessageSender: currentUser.username,
+        receiverHasRead: false,
+        lastMessageType: type,
+      });
+
+    setMessage('');
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateMessage(message)) {
-      const docKey = buildChatDocKey(
-        chats[chatIndex].users.filter(
-          (username) => username !== currentUser.username
-        )[0]
-      );
-
-      firebase
-        .firestore()
-        .collection('chats')
-        .doc(docKey)
-        .update({
-          messages: firebase.firestore.FieldValue.arrayUnion({
-            sender: currentUser.username,
-            message,
-            timeStamp: Date.now(),
-          }),
-          receiverHasRead: false,
-        });
-
-      setMessage('');
+      sendMessage(message, 0);
     }
   };
 
@@ -180,6 +242,19 @@ function MessageBoard(props) {
         </div>
         <div className="message-input">
           <form className="input-container" onSubmit={handleSubmit}>
+            <div
+              className="image-input"
+              onClick={() => photoInputRef.current.click()}
+            >
+              <i className="fas fa-images fa-2x"></i>
+            </div>
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              ref={photoInputRef}
+              onChange={sendPhoto}
+            />
             <textarea
               onKeyUp={userTyping}
               value={message}

@@ -24,15 +24,8 @@ function ChatsList(props) {
   //     });
   // };
 
-  const userSentLastMessage = (chatIndex) => {
-    const chat = props.chats[chatIndex];
-    const messages = chat.messages;
-    if (
-      messages &&
-      messages.length > 0 &&
-      messages[messages.length - 1].sender ===
-        props.currentUser.username
-    ) {
+  const userSentLastMessage = (sender) => {
+    if (sender === props.currentUser.username) {
       return true;
     } else {
       return false;
@@ -54,8 +47,23 @@ function ChatsList(props) {
     const chat = props.chats[chatIndex];
 
     if (!userSentLastMessage(chatIndex)) {
-      const dockey = chat.users.sort().join(':');
+      const dockey = chat.dockey;
       setMessageRead(dockey);
+    }
+  };
+
+  const renderLastMessage = (chat) => {
+    const { lastMessage, lastMessageType } = chat;
+    if (
+      lastMessage &&
+      lastMessageType === 0 &&
+      lastMessage.length > 30
+    ) {
+      return lastMessage.substring(0, 30) + '...';
+    } else if (lastMessageType === 0 && lastMessage.length < 30) {
+      return lastMessage;
+    } else if (lastMessageType === 1) {
+      return 'Image';
     }
   };
 
@@ -73,7 +81,8 @@ function ChatsList(props) {
           <div
             key={i}
             className={
-              !chat.receiverHasRead && !userSentLastMessage(i)
+              !chat.receiverHasRead &&
+              !userSentLastMessage(chat.lastMessageSender)
                 ? 'chat-card unread'
                 : 'chat-card'
             }
@@ -84,19 +93,18 @@ function ChatsList(props) {
             </div>
             <div className="details">
               <div className="username">{friendUsername}</div>
-              {chat.messages.length > 0 && (
-                <div className="last-message">
-                  {chat.messages[
-                    chat.messages.length - 1
-                  ].message.substring(0, 30) + '...'}
+
+              <div className="last-message">
+                {renderLastMessage(chat)}
+              </div>
+            </div>
+            {!chat.receiverHasRead &&
+              chat.lastMessageSender &&
+              !userSentLastMessage(chat.lastMessageSender) && (
+                <div className="unread-icon">
+                  <i className="fas fa-envelope"></i>
                 </div>
               )}
-            </div>
-            {!chat.receiverHasRead && !userSentLastMessage(i) && (
-              <div className="unread-icon">
-                <i className="fas fa-envelope"></i>
-              </div>
-            )}
           </div>
         );
       });
