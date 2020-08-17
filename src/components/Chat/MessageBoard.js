@@ -190,19 +190,18 @@ function MessageBoard(props) {
       .collection('chats')
       .doc(chatkey)
       .update({
-        lastMessage: message,
+        lastMessage: messageBody,
         lastMessageSender: currentUser.username,
         receiverHasRead: false,
         lastMessageType: type,
       });
-
-    setMessage('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateMessage(message)) {
       sendMessage(message, 0);
+      setMessage('');
     }
   };
 

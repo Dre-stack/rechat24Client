@@ -60,7 +60,7 @@ function Signup({ history, isLogedIn }) {
       return false;
     }
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    if (!re.test(email.toLowerCase())) {
+    if (!re.test(email.toLowerCase().trim())) {
       setFormError({ email: 'Please enter a valid emaiil' });
       return false;
     }
@@ -68,7 +68,7 @@ function Signup({ history, isLogedIn }) {
     const querySnapShot = await firebase
       .firestore()
       .collection('users')
-      .where('username', '==', username)
+      .where('username', '==', username.trim())
       .get();
     if (querySnapShot.docs.length > 0) {
       setFormError({
@@ -80,7 +80,7 @@ function Signup({ history, isLogedIn }) {
     const emailSnapShot = await firebase
       .firestore()
       .collection('users')
-      .where('email', '==', email)
+      .where('email', '==', email.trim())
       .get();
     if (emailSnapShot.docs.length > 0) {
       setFormError({
@@ -113,8 +113,8 @@ function Signup({ history, isLogedIn }) {
               .set({
                 id: data.user.uid,
                 dockey: ref.id,
-                username,
-                email,
+                username: username.trim(),
+                email: email.trim(),
                 url: '',
                 description: '',
               })
