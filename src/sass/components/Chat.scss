@@ -273,6 +273,10 @@
           align-self: flex-start;
           background-color: rgba($body-color, 0.5);
         }
+        h6 {
+          text-align: right;
+          font-weight: 100;
+        }
       }
       .image {
         height: 25rem;
